@@ -6,11 +6,12 @@
         this.game_over = false;
         this.bars = [];
         this.ball = null;
+        this.playing = false;
     }
 
     self.Board.prototype = {
         get elements(){
-        var elements = this.bars;
+        var elements = this.bars.map(function(bar){ return bar; });
         elements.push(this.ball);
         return elements;
         }
@@ -18,19 +19,29 @@
 })();
 (function(){
     self.Ball = function(x,y,radius,board){
+    // Elementos de la pelota
         this.x = x;
         this.y = y;
         this.radius = radius;
         this.speed_y = 0;
         this.speed_x = 3;
         this.board = board;
+        this.direction = 1;
         board.ball = this;
         this.kind = "circle";
+    }
+
+    self.Ball.prototype = {
+        move: function(){ // Movimiento de la pelota
+            this.x += (this.speed_x * this.direction);
+            this.y += (this.speed_y);
+        }
     }
 })();
 
 (function(){
     self.Bar = function(x,y,width,height,board){
+    // Elementos de la barra
         this.x = x;
         this.y = y;
         this.width = width;
@@ -75,8 +86,11 @@
             }
         },
         play: function(){ //Funcion de control del juego sobre la ejecucion
-            this.clean();
-            this.draw();
+            if(this.board.playing){
+                this.clean();
+                this.draw();
+                this.board.ball.move();
+            }
         }
     }
 
@@ -107,23 +121,31 @@ var ball = new Ball(350,100,10,board);
 
 // Evento precionar teclas
 document.addEventListener("keydown",function(ev){
-    ev.preventDefault(); //Evitar mover el navegador
     if(ev.keyCode == 38){
         // Tecla flecha hacia arriba
+        ev.preventDefault();
         bar2.up();
     }else if(ev.keyCode == 40){
         // Tecla flecha hacia abajo
+        ev.preventDefault();
         bar2.down();
-    }else if(ev.keyCode === 87){
+    }else if(ev.keyCode == 87){
         // Tecla W
+        ev.preventDefault();
         bar.up();
-    }else if(ev.keyCode === 83){
+    }else if(ev.keyCode == 83){
         // Tecla S
         bar.down();
+        ev.preventDefault();
+    }else if(ev.keyCode == 32){
+        // Tecla Espacio
+        ev.preventDefault();
+        board.playing = !board.playing;
     }
 
 });
 
+board_view.draw();
 window.requestAnimationFrame(controller);
 
 function controller(){
